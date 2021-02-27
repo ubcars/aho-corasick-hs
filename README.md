@@ -1,2 +1,2 @@
 # aho-corasick-hs
-A Haskell implementation of the Aho-Corasick string search algorithm
+A Aho-Corasick algorithm implementation in Haskell (with a Rabin-Karp implementation for comparison).
