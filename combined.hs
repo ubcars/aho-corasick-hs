@@ -29,6 +29,9 @@ ahoCorasick text dictstrs = map (\ (str, (count, indices)) -> (str, count, indic
         counts = count' text trie rindex initcounts 1
 
 -- Helper for ahoCorasick
+-- iterates through the characters in the text along the trie and outputs the pattern occurrences
+-- currentState is the node of the trie we are currently at after comparing the character in the text 
+-- updatedCounts stores the updated pattern occurrences
 count' :: [Char] -> Trie -> Int -> Counts -> Int -> Counts
 count' [] trie state counts index = counts
 count' (c:rest) trie state counts index = count' rest trie currentState updatedCounts (index + 1)
@@ -36,6 +39,7 @@ count' (c:rest) trie state counts index = count' rest trie currentState updatedC
               updatedCounts = count''' trie currentState counts index
 
 -- Helper for count'
+-- follows the failure links until the character is matched to the node in the trie or we reach the root of the trie
 count'' :: Char -> Trie -> Int -> Int
 count'' c trie state
          | Map.member c child = nextStateFound
@@ -47,6 +51,7 @@ count'' c trie state
                nextStateFail = flink node
 
 -- Helper for count'
+-- finds all patterns that can be matched from the prefix so far by following the failure links until the dictionary link shows that no more patterns are substrings of the prefix
 count''' :: Trie -> Int -> Counts -> Int -> Counts
 count''' trie checkState counts index
          | (leaffor node) /= "" = count''' trie nextState updatedCounts index
@@ -163,6 +168,9 @@ prime = 1761471161
 ascii = 256
 
 -- takes a text and a list of patterns and outputs the number and location of occurrences for each pattern
+-- For each pattern, we will calculate the hash values of each possible scope of the text with size m (pattern length) and compare them to the hash value of the pattern
+{- scanl enables comparisons and quick rehashing by storing the hash value of each scope lazily; as the scope shifts, we only need to remove the hashing of the first character in the previous scope and add the hashing of the next character in the new scope -}
+-- a possible occurrence of the pattern is found when patternHash == textHash; we will then explicitly compare the text and the pattern to ensure that a match is found
 -- e.g. rabinKarp "abcdeababa" ["a", "ab", "aba", "cb", "cd", "def"] => [("a", 4, [1,6,8,10]), ("ab", 3, [1,6,8]), ("aba", 2, [6,8]), ("cb", 0, []), ("cd", 1, [3]), ("def", 0, [])]
 rabinKarp :: String -> [String] -> [(String, Int, [Int])]
 rabinKarp text [] = []
